@@ -49,3 +49,9 @@ El objetivo del traslado no fue reescribir el experimento, sino conservar su int
 ## Estado de la Parte I
 
 La primera parte queda terminada. El modelo puede preprocesar datos tanto para entrenamiento como para inferencia, entrenarse y devolver predicciones binarias. La validación final se hizo con `make model-test`: las cuatro pruebas pasaron y `challenge/model.py` alcanzó un 100 % de cobertura. Solo quedan advertencias informativas de pandas por columnas con tipos mixtos en el CSV; no afectan el resultado de las pruebas.
+
+## Parte II: API
+
+El modelo se expuso con FastAPI mediante `POST /predict`. La API acepta uno o varios vuelos, valida la aerolínea, el tipo de vuelo y el mes, y devuelve las predicciones en una lista. Cuando alguno de esos datos no es válido, responde con estado HTTP 400. También se dejó disponible `GET /health` para comprobar que el servicio está activo.
+
+La validación se ejecutó con `make api-test`. Las cuatro pruebas pasaron: una petición válida devolvió HTTP 200 con la predicción esperada y las tres peticiones con datos inválidos devolvieron HTTP 400. No se presentaron errores ni advertencias; `challenge/api.py` alcanzó 97 % de cobertura y la cobertura total fue 94 %. La suite proporcionada se concentra en `/predict`, por lo que `/health` queda implementado, aunque no está cubierto por esas cuatro pruebas.
