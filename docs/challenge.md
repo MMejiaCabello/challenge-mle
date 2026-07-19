@@ -55,3 +55,11 @@ La primera parte queda terminada. El modelo puede preprocesar datos tanto para e
 El modelo se expuso con FastAPI mediante `POST /predict`. La API acepta uno o varios vuelos, valida la aerolínea, el tipo de vuelo y el mes, y devuelve las predicciones en una lista. Cuando alguno de esos datos no es válido, responde con estado HTTP 400. También se dejó disponible `GET /health` para comprobar que el servicio está activo.
 
 La validación se ejecutó con `make api-test`. Las cuatro pruebas pasaron: una petición válida devolvió HTTP 200 con la predicción esperada y las tres peticiones con datos inválidos devolvieron HTTP 400. No se presentaron errores ni advertencias; `challenge/api.py` alcanzó 97 % de cobertura y la cobertura total fue 94 %. La suite proporcionada se concentra en `/predict`, por lo que `/health` queda implementado, aunque no está cubierto por esas cuatro pruebas.
+
+## Parte III: productización
+
+La API se empaquetó en una imagen Docker basada en Python 3.10 y configurada para ejecutar Uvicorn en el puerto 8080. Después de validar el contenedor localmente, se desplegó en Cloud Run y se comprobó que el endpoint `/health` respondiera correctamente desde su URL pública.
+
+La prueba de estrés final se ejecutó contra el servicio desplegado con 100 usuarios y una tasa de creación de 10 usuarios por segundo. Se completaron 17 842 solicitudes a `/predict` sin fallos, con un promedio de 285 ms, un percentil 95 de 370 ms y cerca de 301 solicitudes por segundo. Locust advirtió un uso alto de CPU en la máquina que generó la carga, por lo que el rendimiento máximo podría estar limitado por el cliente de prueba y no por la API.
+
+Con la URL pública configurada en el `Makefile` y el servicio disponible en Cloud Run, la parte III queda terminada.
