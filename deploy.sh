@@ -39,7 +39,7 @@ gcloud run deploy "${SERVICE_NAME}" \
     --concurrency 20 \
     --min-instances 0 \
     --max-instances 3 \
-    --allow-unauthenticated \
+    --no-invoker-iam-check \
     --quiet
 
 SERVICE_URL="$(
@@ -55,7 +55,12 @@ if [[ -z "${SERVICE_URL}" ]]; then
 fi
 
 echo "Verificando ${SERVICE_URL}/health..."
-curl --fail --silent --show-error "${SERVICE_URL}/health"
+if ! curl --fail --silent --show-error "${SERVICE_URL}/health"; then
+    printf '\n' >&2
+    echo "Error: el servicio fue desplegado, pero /health no permite acceso público." >&2
+    echo "Verifica que tu usuario tenga el permiso run.services.setIamPolicy." >&2
+    exit 1
+fi
 printf '\n'
 
 echo "Despliegue completado: ${SERVICE_URL}"
