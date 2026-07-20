@@ -8,6 +8,7 @@ venv/
 .env
 .env.*
 !.env.example
+gha-creds-*.json
 
 # Tests y cobertura
 .pytest_cache/
