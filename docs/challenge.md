@@ -63,3 +63,9 @@ La API se empaquetó en una imagen Docker basada en Python 3.10 y configurada pa
 La prueba de estrés final se ejecutó contra el servicio desplegado con 100 usuarios y una tasa de creación de 10 usuarios por segundo. Se completaron 17 842 solicitudes a `/predict` sin fallos, con un promedio de 285 ms, un percentil 95 de 370 ms y cerca de 301 solicitudes por segundo. Locust advirtió un uso alto de CPU en la máquina que generó la carga, por lo que el rendimiento máximo podría estar limitado por el cliente de prueba y no por la API.
 
 Con la URL pública configurada en el `Makefile` y el servicio disponible en Cloud Run, la parte III queda terminada.
+
+## Parte IV: CI/CD
+
+Se prepararon dos workflows de GitHub Actions. El de integración continua instala las dependencias y ejecuta las pruebas del modelo y de la API en cada cambio dirigido a `develop` o `main`. El de entrega continua queda listo para desplegar en Cloud Run después de una ejecución exitosa de CI.
+
+El despliegue automático requiere configurar `WIF_PROVIDER` y `WIF_SERVICE_ACCOUNT` en GitHub. Como no fue posible completar esos permisos de IAM en el proyecto, el workflow omite el despliegue cuando las variables no existen, en lugar de generar un fallo engañoso. La imagen, el despliegue manual y el servicio publicado ya fueron validados durante la parte III.
