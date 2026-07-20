@@ -1,0 +1,33 @@
+# Python
+__pycache__/
+*.py[cod]
+
+# Entornos virtuales y configuración local
+.venv/
+venv/
+.env
+.env.*
+!.env.example
+gha-creds-*.json
+
+# Tests y cobertura
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+reports/
+
+# Notebooks
+.ipynb_checkpoints/
+
+# Empaquetado
+build/
+dist/
+*.egg-info/
+
+# Editores y sistema operativo
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+__MACOSX/
