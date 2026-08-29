@@ -13,6 +13,8 @@ RUN pip install --no-cache-dir --upgrade pip \
 COPY challenge ./challenge
 COPY data ./data
 
+RUN python -m challenge.train
+
 EXPOSE 8080
 
 CMD ["sh", "-c", "uvicorn challenge.api:app --host 0.0.0.0 --port ${PORT:-8080}"]

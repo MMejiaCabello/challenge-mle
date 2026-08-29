@@ -69,3 +69,15 @@ Con la URL pública configurada en el `Makefile` y el servicio disponible en Clo
 Se prepararon dos workflows de GitHub Actions. El de integración continua instala las dependencias y ejecuta las pruebas del modelo y de la API en cada cambio dirigido a `develop` o `main`. El de entrega continua queda listo para desplegar en Cloud Run después de una ejecución exitosa de CI.
 
 El despliegue automático requiere configurar `WIF_PROVIDER` y `WIF_SERVICE_ACCOUNT` en GitHub. Como no fue posible completar esos permisos de IAM en el proyecto, el workflow omite el despliegue cuando las variables no existen, en lugar de generar un fallo engañoso. La imagen, el despliegue manual y el servicio publicado ya fueron validados durante la parte III.
+
+## Persistencia y ciclo de vida del modelo
+
+Hasta la parte III el modelo se re-entrenaba en cada arranque del servicio. Eso funcionaba, pero tenía tres problemas: el cold start leía y procesaba todo el CSV antes de poder responder, el resultado dependía de que `data.csv` estuviera disponible dentro de la imagen y dos despliegues distintos podían terminar sirviendo modelos diferentes si los datos cambiaban.
+
+La solución fue separar el entrenamiento de la inferencia. El script `challenge/train.py` entrena el modelo a partir de `data/data.csv` y lo persiste como `challenge/model.joblib` usando joblib, ejecutable con `python -m challenge.train`. La imagen Docker corre ese script durante el build, por lo que el artefacto queda empaquetado y el arranque en Cloud Run solo lo carga en memoria. El artefacto no se versiona en git: se regenera en cada build, como cualquier otro producto de compilación.
+
+Para esto `DelayModel` ganó dos métodos, `save()` y `load()`, con la misma idea que el resto de la clase: una sola ruta por defecto (`MODEL_PATH`, junto a `model.py`) y sin depender del directorio de ejecución.
+
+La API mantiene una contingencia: si el artefacto no existe al primer request, entrena desde el CSV, guarda el artefacto para la siguiente ejecución y registra un warning en el log. Es un respaldo para desarrollo local y para los tests, no el camino normal — en producción el artefacto siempre viene en la imagen. Si el modelo no puede entrenarse ni cargarse, el error se propaga en lugar de devolver una predicción inventada.
+
+El ciclo de vida queda así: entrenar con `python -m challenge.train` cuando cambien los datos o el modelo, construir la imagen, desplegar. El test `test_model_save_and_load` verifica que un modelo guardado y cargado produce predicciones idénticas al original.

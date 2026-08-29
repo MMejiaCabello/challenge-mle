@@ -1,8 +1,11 @@
 from pathlib import Path
 from typing import List, Tuple, Union
 
+import joblib
 import pandas as pd
 from sklearn.linear_model import LogisticRegression
+
+MODEL_PATH = Path(__file__).resolve().parent / "model.joblib"
 
 FEATURES_COLS = [
     "OPERA_Latin American Wings",
@@ -97,7 +100,33 @@ class DelayModel:
 
         predictions = self._model.predict(features)
         return [int(prediction) for prediction in predictions]
-    
+
+    def save(
+        self,
+        path: Path = MODEL_PATH
+    ) -> None:
+        """
+        Save the fitted model to disk.
+
+        Args:
+            path (Path): destination of the model artifact.
+        """
+        if self._model is None:
+            raise RuntimeError("Cannot save a model that has not been fitted.")
+        joblib.dump(self._model, path)
+
+    def load(
+        self,
+        path: Path = MODEL_PATH
+    ) -> None:
+        """
+        Load a fitted model from disk.
+
+        Args:
+            path (Path): location of the model artifact.
+        """
+        self._model = joblib.load(path)
+
     def _add_engineered_columns(self, data: pd.DataFrame) -> pd.DataFrame:
         data = data.copy()
         if "min_diff" not in data.columns and {"Fecha-I", "Fecha-O"}.issubset(data.columns):
