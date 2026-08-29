@@ -1,4 +1,4 @@
-from pathlib import Path
+import logging
 from typing import List
 
 import fastapi
@@ -7,7 +7,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel, validator
 
-from challenge.model import DelayModel
+from challenge.model import MODEL_PATH, DelayModel
+
+logger = logging.getLogger(__name__)
 
 app = fastapi.FastAPI()
 
@@ -83,10 +85,12 @@ async def validation_exception_handler(
 
 def get_model() -> DelayModel:
     if model._model is None:
-        data_path = Path(__file__).resolve().parent.parent / "data" / "data.csv"
-        data = pd.read_csv(data_path, low_memory=False)
-        features, target = model.preprocess(data=data, target_column="delay")
-        model.fit(features=features, target=target)
+        if MODEL_PATH.exists():
+            model.load()
+        else:
+            logger.warning("Model artifact not found at %s, training from data.csv", MODEL_PATH)
+            model._fit_from_default_data()
+            model.save()
     return model
 
 

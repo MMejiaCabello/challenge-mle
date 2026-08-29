@@ -25,6 +25,9 @@ build/
 dist/
 *.egg-info/
 
+# Modelos entrenados
+*.joblib
+
 # Editores y sistema operativo
 .vscode/
 .idea/

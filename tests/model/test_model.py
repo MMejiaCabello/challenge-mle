@@ -1,4 +1,5 @@
 import unittest
+import tempfile
 from pathlib import Path
 
 import pandas as pd
@@ -104,3 +105,28 @@ class TestModel(unittest.TestCase):
         assert isinstance(predicted_targets, list)
         assert len(predicted_targets) == features.shape[0]
         assert all(isinstance(predicted_target, int) for predicted_target in predicted_targets)
+
+
+    def test_model_save_and_load(
+        self
+    ):
+        features, target = self.model.preprocess(
+            data=self.data,
+            target_column="delay"
+        )
+        self.model.fit(
+            features=features,
+            target=target
+        )
+
+        with tempfile.TemporaryDirectory() as tmp_dir:
+            artifact_path = Path(tmp_dir) / "model.joblib"
+            self.model.save(path=artifact_path)
+
+            loaded_model = DelayModel()
+            loaded_model.load(path=artifact_path)
+
+            expected_targets = self.model.predict(features=features)
+            predicted_targets = loaded_model.predict(features=features)
+
+        assert predicted_targets == expected_targets
